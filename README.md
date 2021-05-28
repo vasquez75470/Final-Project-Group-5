@@ -1,6 +1,6 @@
 # Final-Project-Group-5
 # Estudiante Eduardo Vasquez num de estudiante: 75470
-# Estudiante  num de estudiante: 
+# Estudiante Iatzy Graciani Rodriguez num de estudiante: 113097
 # Estudiante  num de estudiante: 
 
 This game maje with the next class
