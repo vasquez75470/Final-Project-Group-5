@@ -7,10 +7,12 @@ This game maje with the next class
 
 1. Rect
 2. Health
-3. Turtle
-4. Car
-5. Trunk
-6. Time
+3. Time
+4. FrogPoint
+6. Frog
+7. Turtle
+8. Car
+9. Trunk
 
 1. A frogger where you can move up and down and right and left
 2. Instructions: keys the arrows
