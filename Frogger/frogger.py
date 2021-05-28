@@ -13,6 +13,7 @@ GREEN_GRASS_YSIZE = 48
 carList = []
 trunkList = []
 turtleList = []
+frogPointList = []
 
 class Rect():
     def __init__(self, point1, point2, color, win):
@@ -42,6 +43,73 @@ class Health():
         self.image1.undraw()
         self.image2.undraw()
 
+class Time():
+    def __init__(self, time, factor, win):
+        self.point1 = Point(WIN_WIDTH - 2*TILE_SIZE, WIN_HEIGHT - TILE_SIZE + 8)
+        self.point2 = Point(WIN_WIDTH - 2*TILE_SIZE, WIN_HEIGHT - 6)
+        self.time = time
+        self.counter = 0
+        self.factor = factor
+        self.win = win
+        self.rectangle = Rectangle(Point(self.point1.x - time*factor, self.point1.y), self.point2)
+
+    def draw_text(self):
+        message = Text(Point(WIN_WIDTH - TILE_SIZE, WIN_HEIGHT - TILE_SIZE/2 + 2), 'TIME')
+        message.setSize(16)
+        message.setFace('helvetica')
+        message.setTextColor("yellow")
+        message.draw(self.win)
+    
+    def draw(self):
+        self.rectangle.setFill("lime")
+        self.rectangle.setOutline("lime")
+        self.rectangle.draw(self.win)
+
+    def undraw(self):
+        self.rectangle.undraw()
+
+    def change_time(self):
+        self.time -= 0.5
+        self.undraw()
+        self.point1 = Point(self.point2.x - self.time*self.factor, self.point1.y)
+        self.rectangle = Rectangle(self.point1, self.point2)
+        if self.time >= 0: self.draw()
+        return self.get_time_over()
+
+    def get_time_over(self):
+        if self.time <= 0: return True
+        else: return False
+
+    def update(self):
+        self.counter += 1
+        time_finished = False
+        if self.counter % (UPDATE_RATE/2) == 0:
+            self.counter = 0
+            time_finished = self.change_time()
+        return time_finished
+
+class FrogPoint():
+    def __init__(self, xPos, yPos, win):
+        self.xPos = xPos
+        self.yPos = yPos
+        self.win = win
+        self.is_draw = False
+        self.image = Image(Point(xPos + TILE_SIZE/2, yPos + TILE_SIZE/2), "FrogPoint.png")
+        self.rect = Rectangle(Point(xPos, yPos), Point(xPos + TILE_SIZE, yPos + TILE_SIZE))
+
+    def collision_detected(self, frog):
+        frogCenterX = frog.xPos + TILE_SIZE/2
+        frogCenterY = frog.yPos + TILE_SIZE/2
+        if self.is_draw == True: return False
+        if frogCenterX > self.xPos and frogCenterX < self.xPos + TILE_SIZE and \
+           frogCenterY > self.yPos and frogCenterY < self.yPos + TILE_SIZE: return True
+        return False
+
+    def draw(self):
+        self.image.draw(self.win)
+        self.is_draw = True
+    def undraw(self): self.image.undraw()
+    
 class Frog():
     def __init__(self, xPos, yPos, xDir, yDir, health, win):
         self.xPos = xPos
@@ -327,71 +395,24 @@ def create_trunks(win):
         
     return tList
 
-class Time():
-    def __init__(self, time, factor, win):
-        self.point1 = Point(WIN_WIDTH - 2*TILE_SIZE, WIN_HEIGHT - TILE_SIZE + 8)
-        self.point2 = Point(WIN_WIDTH - 2*TILE_SIZE, WIN_HEIGHT - 6)
-        self.time = time
-        self.counter = 0
-        self.factor = factor
-        self.win = win
-        self.rectangle = Rectangle(Point(self.point1.x - time*factor, self.point1.y), self.point2)
+def create_frogPoint(win):
+    fpList = []
+    xOffset = TILE_SIZE/2
 
- 
+    for i in range(5):
+        frogPoint = FrogPoint(xOffset + (i*3*TILE_SIZE),2*TILE_SIZE, win)
+      #  frogPoint.draw()
+        fpList.append(frogPoint)
 
-    def draw_text(self):
-        message = Text(Point(WIN_WIDTH - TILE_SIZE, WIN_HEIGHT - TILE_SIZE/2 + 2), 'TIME')
-        message.setSize(16)
-        message.setFace('helvetica')
-        message.setTextColor("yellow")
-        message.draw(self.win)
-    
-    def draw(self):
-        self.rectangle.setFill("lime")
-        self.rectangle.setOutline("lime")
-        self.rectangle.draw(self.win)
-
- 
-
-    def undraw(self):
-        self.rectangle.undraw()
-
- 
-
-    def change_time(self):
-        self.time -= 0.5
-        self.undraw()
-        self.point1 = Point(self.point2.x - self.time*self.factor, self.point1.y)
-        self.rectangle = Rectangle(self.point1, self.point2)
-        if self.time >= 0: self.draw()
-        return self.get_time_over()
-
- 
-
-    def get_time_over(self):
-        if self.time <= 0: return True
-        else: return False
-
- 
-
-    def update(self):
-        
-        self.counter += 1
-        time_finished = False
-        if self.counter % (UPDATE_RATE/2) == 0:
-            self.counter = 0
-            time_finished = self.change_time()
-        return time_finished
-
-
-            
+    return fpList
 
 def main():
     win = GraphWin(WIN_TITLE, WIN_WIDTH, WIN_HEIGHT)
     create_background(win)
     game_over = False
     health_count = 3
-
+    frogPointList = create_frogPoint(win)
+    
     while(game_over != True):
         carList = create_cars(win)
         trunkList = create_trunks(win)
@@ -400,18 +421,25 @@ def main():
         frog.draw()
         health = Health(frog.health, win)
         health.draw()
-        collided = False
-        time = Time(30, 5, win)
+        time = Time(25, 5, win)
         time.draw()
         time.draw_text()
+        collided = False
         
         while(collided != True):
             frame_changed = False
             collided = False
             on_trunk = False
             on_turtle = False
+            on_point = False
+
             collided = time.update()
-            frog.update()            
+            frog.update()
+            for point in frogPointList:
+                if point.collision_detected(frog):
+                    point.draw()
+                    on_point = True
+            
             for car in carList:
                 car.update()
                 if car.collision_detected(frog): collided = True
@@ -432,7 +460,7 @@ def main():
             if (frog.yPos < 8 * TILE_SIZE and (on_trunk == False and on_turtle == False)) or\
                (frog.xPos + TILE_SIZE < 0 or frog.xPos > WIN_WIDTH): collided = True
                 
-            if collided:
+            if collided or on_point:
                 for car in carList: car.undraw()
                 for trunk in trunkList: trunk.undraw()
                 for turtle in turtleList: turtle.undraw()
@@ -441,9 +469,10 @@ def main():
                 carList.clear()
                 trunkList.clear()
                 turtleList.clear()
-                health_count -= 1
-                if health_count <= 0:
-                    game_over = True
+                if on_point == False:
+                    health_count -= 1
+                    if health_count <= 0:
+                        game_over = True
             update(UPDATE_RATE)
     message = Text(Point(WIN_WIDTH / 2, WIN_HEIGHT * 2/5), 'G A M E   O V E R')
     message.setSize(32)
