@@ -7,14 +7,14 @@
 
 This game is made with the following classes:
 
-1. Rect
-2. Health
-3. Time
-4. FrogPoint
-6. Frog
-7. Turtle
-8. Car
-9. Trunk
+1. Rect : area where game will be played
+2. Health : measure of the frogs current health
+3. Time : measure of time frog has left to cross to the other side 
+4. FrogPoint : current location of the frog 
+6. Frog : moves in all four directions
+7. Turtle : will move from left to right or right to left and dissapear ocassionally
+8. Car : will move left to right or right to left  
+9. Trunk : will move left or right and will be able to be rode by frog
 
  Instructions: 
  Use arrowkeys to move frog and get him to safety!
